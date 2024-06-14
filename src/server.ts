@@ -26,7 +26,7 @@ const port = process.env.PORT || 3000
 app.use(morgan("dev"))
 app.use(express.json()) //accept json
 app.use((req, res, next) => {
-    console.log("client request received:", req)
+    console.log("client request received")
     next()
 })
 
@@ -44,6 +44,7 @@ app.get("/api/planets/:id", (req, res) => {
     }
 })
 
+//inviamo una rischiesta che aggiunge un nuovo pianeta all'array
 app.post("/api/newplanet", (req, res) => {
     const { id, name } = req.body
     const newPlanet: Planet = { id, name }
@@ -55,6 +56,34 @@ app.post("/api/newplanet", (req, res) => {
         res.status(500).send("There is already a planet with this id or name")
     } else {
         res.status(400).send("Insert and id and a name to add a planet")
+    }
+})
+
+//modifica di una riga dalla tabella di un database.
+//i valori che non vengono specificati non vengono mantenuti, ma eliminati !!!!attenzione!!!!!
+app.put("/api/updateplanet/:id", (req, res) => {
+    const { id } = req.params
+    const { name } = req.body
+    console.log(id, name)
+
+    if (id && name) {
+        planets = planets.map((p) => (p.id === Number(id) ? { ...p, name } : p))
+        res.status(200).send(planets)
+    } else {
+        res.status(400).send({ msg: "Please, specify an id and a name" })
+    }
+})
+
+//eliminare una riga
+app.delete("/api/deleteplanet/:id", (req, res) => {
+    const { id } = req.params
+    const planetToDelete = planets.find((p) => p.id === Number(id))
+
+    if (planetToDelete) {
+        planets = planets.filter((p) => p.id !== Number(id))
+        res.status(200).send(planets)
+    } else {
+        res.status(400).send("planet not found")
     }
 })
 
