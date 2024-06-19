@@ -30,43 +30,6 @@ app.use((req, res, next) => {
     next()
 })
 
-app.get("/api/planets", (req, res) => {
-    res.status(200).json(planets)
-})
-
-app.get("/api/planets/:id", (req, res) => {
-    const { id } = req.params
-    const planet = planets.find((p) => p.id === Number(id))
-    if (planet) {
-        res.status(200).json(planet)
-    } else {
-        res.status(400).send("planet not found")
-    }
-})
-
-app.post("/api/newplanet", (req, res) => {
-    const { id, name } = req.body
-    const newPlanet: Planet = { id, name }
-    const alreadyExists = planets.some((p) => p.id === id || p.name === name)
-    if (id && name && !alreadyExists) {
-        planets = [...planets, newPlanet]
-        res.status(200).json(planets)
-    } else if (alreadyExists) {
-        res.status(500).send("There is already a planet with this id or name")
-    } else {
-        res.status(400).send("Insert and id and a name to add a planet")
-    }
-})
-
-//gestione errori
-app.use((err, res, next) => {
-    if (err) {
-        res.status(err.statusCode || 500).send({ msg: err.statusMessage || "Internal Server Error" })
-    } else {
-        next()
-    }
-})
-
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`)
 })
