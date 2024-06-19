@@ -4,7 +4,6 @@ import morgan from "morgan"
 import dotenv from "dotenv"
 import { getAll, getOneById, create, updateById, deleteById } from "./controllers/planets.js"
 
-
 dotenv.config()
 
 const app = express()
