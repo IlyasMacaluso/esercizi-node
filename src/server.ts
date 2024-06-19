@@ -2,6 +2,16 @@ import express from "express"
 import "express-async-errors"
 import morgan from "morgan"
 import dotenv from "dotenv"
+import Joi from "joi"
+
+const planetValidation = Joi.object({
+    id: Joi.number().integer().required(),
+    name: Joi.string().alphanum().min(3).max(30).required(),
+})
+
+const planetIdValidation = Joi.object({
+    id: Joi.number().integer().required(),
+})
 
 type Planet = {
     id: number
@@ -25,69 +35,88 @@ const port = process.env.PORT || 3000
 
 app.use(morgan("dev"))
 app.use(express.json()) //accept json
+
+//middleware che invia un messaggio quando la richiesta dell'utente viene ricevuta
 app.use((req, res, next) => {
     console.log("client request received")
     next()
 })
 
+//return all planets
 app.get("/api/planets", (req, res) => {
     res.status(200).json(planets)
 })
 
+//return 1 planet by id
 app.get("/api/planets/:id", (req, res) => {
-    const { id } = req.params
-    const planet = planets.find((p) => p.id === Number(id))
-    if (planet) {
-        res.status(200).json(planet)
+    const { error, value } = planetIdValidation.validate(req.params)
+    const { id } = value
+    if (!error) {
+        const planet = planets.find((p) => p.id === Number(id))
+        if (planet) {
+            res.status(200).json(planet)
+        } else {
+            res.status(400).send({ err: `there is no planet with id ${id}` })
+        }
     } else {
-        res.status(400).send("planet not found")
+        res.status(400).send({ err: error.details[0].message })
     }
 })
 
-//inviamo una rischiesta che aggiunge un nuovo pianeta all'array
-app.post("/api/newplanet", (req, res) => {
-    const { id, name } = req.body
-    const newPlanet: Planet = { id, name }
-    const alreadyExists = planets.some((p) => p.id === id || p.name === name)
-    if (id && name && !alreadyExists) {
-        planets = [...planets, newPlanet]
-        res.status(200).json(planets)
-    } else if (alreadyExists) {
-        res.status(500).send("There is already a planet with this id or name")
+//add new planet
+app.post("/api/planets", (req, res) => {
+    const { error, value } = planetValidation.validate(req.body)
+    if (!error) {
+        const { id, name } = value
+        const newPlanet: Planet = { id, name }
+        const alreadyExists = planets.some((p) => p.id === id || p.name === name)
+        if (!alreadyExists) {
+            planets = [...planets, newPlanet]
+            res.status(201).json({ msg: "planet successfully added" })
+        } else if (alreadyExists) {
+            res.status(400).send({ err: "there is already a planet with this id or name" })
+        }
     } else {
-        res.status(400).send("Insert and id and a name to add a planet")
+        res.status(400).send({ err: error.details[0].message })
     }
 })
 
-//modifica di una riga dalla tabella di un database.
-//i valori che non vengono specificati non vengono mantenuti, ma eliminati !!!!attenzione!!!!!
-app.put("/api/updateplanet/:id", (req, res) => {
+//modify a planet (deletes properties / columns we don't modify or copy)
+app.put("/api/planets/:id", (req, res) => {
     const { id } = req.params
     const { name } = req.body
-    console.log(id, name)
-
-    if (id && name) {
-        planets = planets.map((p) => (p.id === Number(id) ? { ...p, name } : p))
-        res.status(200).send(planets)
+    const { error, value } = planetValidation.validate({ id, name })
+    if (!error) {
+        const planetToUpdate = planets.find((p) => p.id === Number(id))
+        if (planetToUpdate) {
+            planets = planets.map((p) => (p.id === Number(id) ? { ...p, name } : p))
+            res.status(200).send({ msg: "planet modified successfully" })
+        } else {
+            res.status(400).send({ err: `there is no planet with id ${id}` })
+        }
     } else {
-        res.status(400).send({ msg: "Please, specify an id and a name" })
+        res.status(400).send({ err: error.details[0].message })
     }
 })
 
-//eliminare una riga
-app.delete("/api/deleteplanet/:id", (req, res) => {
-    const { id } = req.params
-    const planetToDelete = planets.find((p) => p.id === Number(id))
-
-    if (planetToDelete) {
-        planets = planets.filter((p) => p.id !== Number(id))
-        res.status(200).send(planets)
+//delete a planet
+app.delete("/api/planets/:id", (req, res) => {
+    const { error, value } = planetIdValidation.validate(req.params)
+    const { id } = value
+    if (!error) {
+        const planetToDelete = planets.find((p) => p.id === Number(id))
+        if (planetToDelete) {
+            planets = planets.filter((p) => p.id !== Number(id))
+            res.status(200).send({ msg: "planet deleted succesfully" })
+        } else {
+            res.status(400).send({ err: `there is no planet with id ${id}` })
+        }
     } else {
-        res.status(400).send("planet not found")
+        res.status(400).send({ msg: error.details[0].message })
     }
 })
 
-//gestione errori
+//manage uncaught errors
 app.use((err, res, next) => {
     if (err) {
         res.status(err.statusCode || 500).send({ msg: err.statusMessage || "Internal Server Error" })
