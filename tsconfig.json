@@ -6,6 +6,6 @@
     "module": "es6",
     "target": "ES6"
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "src/controllers/planets"],
   "exclude": ["./src/**/*.test.js"]
 }

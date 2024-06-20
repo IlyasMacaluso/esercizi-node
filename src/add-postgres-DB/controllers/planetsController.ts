@@ -27,6 +27,11 @@ const setupDB = async () => {
     await db.none(`INSERT INTO planets (name) VALUES ('Saturn');`)
     await db.none(`INSERT INTO planets (name) VALUES ('Uranus');`)
     await db.none(`INSERT INTO planets (name) VALUES ('Neptune');`)
+
+    const planets = await db.many(`SELECT * FROM planets`)
+
+    console.log(planets)
+    return planets
 }
 
 setupDB()
