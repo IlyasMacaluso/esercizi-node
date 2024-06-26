@@ -4,7 +4,6 @@ import dotenv from "dotenv"
 import { getUsers } from "./controllers/users.js"
 import "express-async-errors"
 import "./passport.js"
-
 dotenv.config()
 
 const app = express()
@@ -19,7 +18,6 @@ app.use((req, res, next) => {
     next()
 })
 
-//route per testare il funzionamento del server
 app.get("/api/users", getUsers)
 
 //manage uncaught errors

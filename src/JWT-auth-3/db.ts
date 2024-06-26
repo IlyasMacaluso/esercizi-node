@@ -18,7 +18,7 @@ const setupDB = async () => {
     `
     )
     //populate table
-    await db.none(`INSERT INTO users (email, password) VALUES ('email1', 'password1');`)
+    await db.none(`INSERT INTO users (email, password) VALUES ('email', 'password');`)
 }
 
 setupDB()
