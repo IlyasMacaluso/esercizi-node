@@ -20,7 +20,7 @@ const setupDB = async () => {
 
         CREATE TABLE users (
             id SERIAL NOT NULL PRIMARY KEY,
-            email TEXT NOT NULL,
+            username TEXT NOT NULL,
             password TEXT NOT NULL,
             token TEXT
         );
@@ -36,7 +36,7 @@ const setupDB = async () => {
     await db.none(`INSERT INTO planets (name) VALUES ('Uranus');`)
     await db.none(`INSERT INTO planets (name) VALUES ('Neptune');`)
 
-    await db.none(`INSERT INTO users (email, password) VALUES ('email', 'password');`)
+    await db.none(`INSERT INTO users (username, password) VALUES ('amazinguser', 'password');`)
 
 }
 
