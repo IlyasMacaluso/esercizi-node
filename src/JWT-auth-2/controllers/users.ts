@@ -4,6 +4,23 @@ import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 dotenv.config()
 
+const signup = async (req: Request, res: Response) => {
+    try {
+        const { username, password } = req.body
+        const user = await db.oneOrNone(`SELECT * FROM users WHERE email=$1`, username) //mi assicusa che l'utente non esista già
+        if (!user) {
+            //aggiungiamo al database le informazioni del nuovo utente, e in più utilizziamo RETURNING per ottenere
+            //l'id dell'utente una volta completata l'operazione (ci servirà in futuro)
+            const { id } = await db.one(`INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`, [username, password])
+            res.status(201).json({ msg: "user registered successfully", id })
+        } else {
+            res.status(400).json({ msg: "a user with this email is already registered" })
+        }
+    } catch (error) {
+        res.status(500).json({ err: "Internal server error" })
+    }
+}
+
 const login = async (req: Request, res: Response) => {
     const { email, password } = req.body
     try {
@@ -25,21 +42,4 @@ const login = async (req: Request, res: Response) => {
     }
 }
 
-const signup = async (req: Request, res: Response) => {
-    try {
-        const { username, password } = req.body
-        const user = await db.oneOrNone(`SELECT * FROM users WHERE email=$1`, username)
-        if (!user) {
-            //aggiungiamo al database le informazioni del nuovo utente, e in più utilizziamo RETURNING per ottenere
-            //l'id dell'utente una volta completata l'operazione (ci servirà in futuro)
-            const { id } = await db.one(`INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`, [username, password])
-            res.status(201).json({ msg: "user registered successfully", id })
-        } else {
-            res.status(400).json({ msg: "a user with this email is already registered" })
-        }
-    } catch (error) {
-        res.status(500).json({ err: "Internal server error" })
-    }
-}
-
-export { login, signup }
+export { signup, login }
