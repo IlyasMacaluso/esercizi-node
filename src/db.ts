@@ -1,24 +1,27 @@
 import pgPromise from "pg-promise"
+import dotenv from "dotenv"
 
-const db = pgPromise(/* {options} */)("postgres://ilyas:ilyas@localhost:5432/my_project")
+dotenv.config()
 
-//databse setup
+const dbUrl = process.env.DB_URL
+
+if (!dbUrl) {
+    throw new Error("Database url not found in .env file")
+}
+
+const db = pgPromise()(dbUrl)
+
 const setupDB = async () => {
-    //create table
-    await db.none(
-        `
+    await db.none(`
         DROP TABLE IF EXISTS users;
-
+        
         CREATE TABLE users (
-            id SERIAL NOT NULL PRIMARY KEY,
-            email TEXT NOT NULL,
-            password TEXT NOT NULL,
-            token TEXT
-        );
-    `
-    )
-    //populate table
-    await db.none(`INSERT INTO users (email, password) VALUES ('email1', 'password1');`)
+        ID SERIAL NOT NULL, 
+        username VARCHAR(50),
+        password TEXT,
+        token TEXT
+    )`)
+    await db.none(`INSERT INTO users (username, password) VALUES ('amazinguser', 'secretpassword')`)
 }
 
 setupDB()

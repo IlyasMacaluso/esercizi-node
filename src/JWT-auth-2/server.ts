@@ -1,7 +1,7 @@
 import express from "express"
 import morgan from "morgan"
 import dotenv from "dotenv"
-import { login, signup, authorize, logout, getUsers } from "./controllers/users.js"
+import { login, signup } from "./controllers/users.js"
 import "express-async-errors"
 import "./passport.js"
 dotenv.config()
@@ -18,10 +18,8 @@ app.use((req, res, next) => {
     next()
 })
 
-app.get("/api/users", getUsers)
-app.post("/api/users/login", login)
 app.post("/api/users/signup", signup)
-app.get("/api/users/logout", authorize, logout)
+app.post("/api/users/login", login)
 
 //manage uncaught errors
 app.use((err, res, next) => {

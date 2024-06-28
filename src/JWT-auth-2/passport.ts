@@ -12,12 +12,13 @@ if (!secretKey) {
     throw new Error("JWT secret key 'KEY' is not defined in environment variables")
 }
 
+const { Strategy, ExtractJwt } = passportJWT
 passport.use(
     //utilizziamo passportJWT per gestire l'autenticazione
-    new passportJWT.Strategy(
+    new Strategy(
         {
             secretOrKey: secretKey,
-            jwtFromRequest: passportJWT.ExtractJwt.fromAuthHeaderAsBearerToken(),
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         },
         async (payload, done) => {
             try {

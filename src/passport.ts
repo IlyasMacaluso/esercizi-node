@@ -1,19 +1,17 @@
-import dotenv from "dotenv"
 import passport from "passport"
 import passportJWT from "passport-jwt"
+import dotenv from "dotenv"
 import { db } from "./db.js"
 
 dotenv.config()
 
-//prendiamo la chiave dal file .env
 const secretKey = process.env.KEY
 
-//se la chiave non viene trovata lanciamo un errore
 if (!secretKey) {
-    throw new Error("JWT secret key 'KEY' is not defined in environment variables")
+    throw new Error("No KEY variable was found in .env file")
 }
 
-const { ExtractJwt, Strategy } = passportJWT
+const { Strategy, ExtractJwt } = passportJWT
 
 passport.use(
     new Strategy(
@@ -24,7 +22,11 @@ passport.use(
         async (payload, done) => {
             try {
                 const user = await db.oneOrNone(`SELECT * FROM users WHERE id=$1`, [payload.id])
-                return user ? done(null, user) : done(null, false, {msg: "User not found"})
+                if (user) {
+                    return done(null, user)
+                } else {
+                    return done(null, false, { msg: "User not found" })
+                }
             } catch (error) {
                 done(error, false)
             }
@@ -32,4 +34,4 @@ passport.use(
     )
 )
 
-export default passport
+export { passport }
